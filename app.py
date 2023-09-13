@@ -31,7 +31,10 @@ def send_op(op: dict):
     
     provider = HTTPProvider(rpc)
     response = provider.make_request('eth_sendUserOperation', params=[op['message'], ENTRY_POINT])
-    print(f'Sent user op {op}. Response:', response)
+    print(f'Sent user op {op}. Response: {response}')
+
+    if 'error' in response:
+        raise Exception(f'Failed to send op. Error: {response["error"]}')
     
 
 def check_ops_to_send():
