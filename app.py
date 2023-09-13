@@ -3,6 +3,7 @@ import threading
 import json
 from flask import Flask, request
 from web3 import HTTPProvider
+import os
 
 ENTRY_POINT = '0x5FF137D4b0FDCD49DcA30c7CF57E578a026d2789'
 ops_queue_json_sem = threading.Semaphore()
@@ -11,6 +12,14 @@ app = Flask(__name__)
 
 base_mainnet_rpc = 'https://base-mainnet.g.alchemy.com/v2/y74PPMkNGcWpxnIbVFWvp7sLE-1Miuyy'
 base_goerli_rpc = 'https://base-goerli.g.alchemy.com/v2/PyhX0B5YxLRdSDob7vZ3wlRVv_WVFjwc'
+
+def get_current_queue():
+    if not os.path.exists('ops_queue.json'):
+        with open('ops_queue.json', 'w') as f:
+            f.write('[]')
+
+    with open('ops_queue.json') as f:
+        return json.loads(f.read())
 
 def send_op(op: dict):
     if op['chainId'] == 8453:
@@ -27,11 +36,10 @@ def send_op(op: dict):
 
 def check_ops_to_send():
     with ops_queue_json_sem:
-        with open('ops_queue.json') as f:
-            raw_ops_queue = json.loads(f.read())
-        
+        raw_ops_queue = get_current_queue()
         sorted_ops_queue = sorted(raw_ops_queue, key=lambda op: op['sendAt'])
         current_time = int(time.time())
+
         ops_to_send = []
         new_ops_queue = []
         for op in sorted_ops_queue:
@@ -58,8 +66,7 @@ def periodically_check_ops_to_send():
 @app.route('/new-user-ops', methods=['POST'])
 def receive_new_user_ops():
     with ops_queue_json_sem:
-        with open('ops_queue.json') as f:
-            raw_ops_queue = json.loads(f.read())
+        raw_ops_queue = get_current_queue()
         
         new_ops = request.json['newOps']
         raw_ops_queue.extend(new_ops)
