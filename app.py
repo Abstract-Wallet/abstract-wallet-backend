@@ -38,25 +38,40 @@ def check_ops_to_send():
     with ops_queue_json_sem:
         raw_ops_queue = get_current_queue()
         sorted_ops_queue = sorted(raw_ops_queue, key=lambda op: op['sendAt'])
+        new_ops_queue = []
         current_time = int(time.time())
 
-        ops_to_send = []
-        new_ops_queue = []
+        ops_to_send = {}
         for op in sorted_ops_queue:
-            if current_time >= op['sendAt']:
-                ops_to_send.append(op)
-            else:
+            if op['sendAt'] >= current_time:
                 new_ops_queue.append(op)
+                continue
+            
+            if op['sender'] not in ops_to_send:
+                ops_to_send[op['sender']] = op
         
         with open('ops_queue.json', 'w') as f:
             f.write(json.dumps(new_ops_queue))
-
+        
+    bad_subscription_ids = []
     for op in ops_to_send:
         try:
             send_op(op)
+            time.sleep(1)
         except Exception as e:
             print(f'Failed to send op {op}:', e)
-
+            bad_subscription_ids.append(op['subscriptionId'])
+    
+    if len(bad_subscription_ids) > 0:  # Remove all ops that are on a broken subscription
+        with ops_queue_json_sem:
+            raw_ops_queue = get_current_queue()
+            new_ops_queue = []
+            for op in raw_ops_queue:
+                if op['subscriptionId'] not in bad_subscription_ids:
+                    new_ops_queue.append(op)
+            
+            with open('ops_queue.json', 'w') as f:
+                f.write(json.dumps(new_ops_queue))
 
 def periodically_check_ops_to_send():
     while True:
