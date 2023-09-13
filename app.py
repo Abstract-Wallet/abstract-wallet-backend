@@ -41,7 +41,7 @@ def check_ops_to_send():
         new_ops_queue = []
         current_time = int(time.time())
 
-        ops_to_send = {}
+        ops_to_send = {} # In order to not spam the node, send one user op per wallet
         for op in sorted_ops_queue:
             if op['sendAt'] >= current_time:
                 new_ops_queue.append(op)
@@ -60,14 +60,14 @@ def check_ops_to_send():
             time.sleep(1)
         except Exception as e:
             print('Failed to send op.', op, e)
-            bad_subscription_ids.append(op['subscriptionId'])
+            bad_subscription_ids.append(op.get('subscriptionId'))
     
     if len(bad_subscription_ids) > 0:  # Remove all ops that are on a broken subscription
         with ops_queue_json_sem:
             raw_ops_queue = get_current_queue()
             new_ops_queue = []
             for op in raw_ops_queue:
-                if op['subscriptionId'] not in bad_subscription_ids:
+                if op.get('subscriptionId') not in bad_subscription_ids:
                     new_ops_queue.append(op)
             
             with open('ops_queue.json', 'w') as f:
