@@ -54,7 +54,7 @@ def check_ops_to_send():
             f.write(json.dumps(new_ops_queue))
         
     bad_subscription_ids = []
-    for op in ops_to_send:
+    for op in ops_to_send.values():
         try:
             send_op(op)
             time.sleep(1)
