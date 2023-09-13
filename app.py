@@ -59,7 +59,7 @@ def check_ops_to_send():
             send_op(op)
             time.sleep(1)
         except Exception as e:
-            print(f'Failed to send op {op}:', e)
+            print('Failed to send op.', op, e)
             bad_subscription_ids.append(op['subscriptionId'])
     
     if len(bad_subscription_ids) > 0:  # Remove all ops that are on a broken subscription
