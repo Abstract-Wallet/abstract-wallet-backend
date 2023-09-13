@@ -85,7 +85,7 @@ def check_ops_to_send():
 def periodically_check_ops_to_send():
     while True:
         check_ops_to_send()
-        time.sleep(3)
+        time.sleep(5)
 
 @app.route('/healthcheck', methods=['GET'])
 def healthcheck():
