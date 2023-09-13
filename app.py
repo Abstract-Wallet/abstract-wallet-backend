@@ -85,6 +85,10 @@ def periodically_check_ops_to_send():
         check_ops_to_send()
         time.sleep(3)
 
+@app.route('/healthcheck', methods=['GET'])
+def healthcheck():
+    return 'OK'
+
 @app.route('/new-user-ops', methods=['POST'])
 def receive_new_user_ops():
     with ops_queue_json_sem:
