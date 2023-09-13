@@ -2,6 +2,7 @@ import time
 import threading
 import json
 from flask import Flask, request
+from flask_cors import CORS
 from web3 import HTTPProvider
 import os
 
@@ -9,6 +10,7 @@ ENTRY_POINT = '0x5FF137D4b0FDCD49DcA30c7CF57E578a026d2789'
 ops_queue_json_sem = threading.Semaphore()
 
 app = Flask(__name__)
+CORS(app)
 
 base_mainnet_rpc = 'https://base-mainnet.g.alchemy.com/v2/y74PPMkNGcWpxnIbVFWvp7sLE-1Miuyy'
 base_goerli_rpc = 'https://base-goerli.g.alchemy.com/v2/PyhX0B5YxLRdSDob7vZ3wlRVv_WVFjwc'
