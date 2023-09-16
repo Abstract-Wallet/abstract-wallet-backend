@@ -116,7 +116,7 @@ def receive_new_user_ops():
 
 @app.route('/waitlist', methods=['POST'])
 def waitlist():
-    email = request.form['email']
+    email = request.json['email']
     with open('waitlist.txt', 'a') as f:
         f.write(email + '\n')
 
