@@ -5,9 +5,19 @@ from flask import Flask, request
 from flask_cors import CORS
 from web3 import HTTPProvider
 import os
+import asyncio
+from aiogram import Bot
+from dotenv import load_dotenv
+
+load_dotenv()
+
 
 ENTRY_POINT = '0x5FF137D4b0FDCD49DcA30c7CF57E578a026d2789'
+MY_TELEGRAM_ID = 327150749
+
 ops_queue_json_sem = threading.Semaphore()
+event_loop = asyncio.get_event_loop()
+bot = Bot(os.environ['TELEGRAM_BOT_TOKEN'])
 
 app = Flask(__name__)
 CORS(app)
@@ -102,6 +112,16 @@ def receive_new_user_ops():
             f.write(json.dumps(raw_ops_queue))
     
     print(f'Added {len(new_ops)} new ops to queue')
+    return 'OK'
+
+@app.route('/waitlist', methods=['POST'])
+def waitlist():
+    email = request.form['email']
+    with open('waitlist.txt', 'a') as f:
+        f.write(email + '\n')
+
+    # Inform the admin about the new email
+    event_loop.run_until_complete(bot.send_message(MY_TELEGRAM_ID, f'New email: {email}'))
     return 'OK'
 
 if __name__ == '__main__':

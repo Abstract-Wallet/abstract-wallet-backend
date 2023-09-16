@@ -1,3 +1,5 @@
 __pycache__
 venv
 ops_queue.json
+.env
+waitlist.txt
